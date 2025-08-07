@@ -9,9 +9,8 @@ from icalendar import Calendar, Event
 from datetime import datetime
 import pytz
 import json
-import config # 导入配置文件
 import time   # 导入time模块用于添加延迟
-import ddddocr # <-- 新增：导入ddddocr库
+import ddddocr # 导入ddddocr库
 
 # --- 1. 配置区 ---
 ACADEMIC_YEAR_SEMESTER = "202501"  # 目标学年学期代码
@@ -211,4 +210,5 @@ if __name__ == '__main__':
     try:
         main()
     finally:
+
         input("程序已结束，按任意键退出...")
