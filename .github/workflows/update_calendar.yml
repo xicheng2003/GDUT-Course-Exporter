@@ -1,0 +1,45 @@
+name: Update GDUT Calendar
+
+on:
+  # 每天在北京时间早上6点（UTC时间前一天22点）自动运行
+  schedule:
+    - cron: '0 22 * * *'
+  # 允许手动在 Actions 页面触发此工作流
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run script to generate .ics file
+        run: python getcourses_looping.py
+        env:
+          GDUT_ACCOUNT: ${{ secrets.GDUT_ACCOUNT }}
+          GDUT_PASSWORD: ${{ secrets.GDUT_PASSWORD }}
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          # 只推送 my_courses_semester.ics 文件到 gh-pages 分支
+          publish_branch: gh-pages
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          # 通过 keep_files 确保每次只更新.ics文件，不删除其他文件
+          keep_files: true
+          # 筛选要发布的文件
+          allow_empty_commit: false
+          force_orphan: false
+          full_commit_message: 'Update calendar file'
