@@ -23,7 +23,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run script to generate .ics file
-        run: python getcourses_looping.py
+        run: python get_courses_looping.py
         env:
           GDUT_ACCOUNT: ${{ secrets.GDUT_ACCOUNT }}
           GDUT_PASSWORD: ${{ secrets.GDUT_PASSWORD }}
