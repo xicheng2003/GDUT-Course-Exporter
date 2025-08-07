@@ -1,0 +1,7 @@
+requests
+beautifulsoup4
+lxml
+pycryptodome
+icalendar
+pytz
+ddddocr
