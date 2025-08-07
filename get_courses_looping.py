@@ -58,19 +58,21 @@ def fetch_and_parse_weekly_data(session, week):
         response = session.get(data_url, headers=headers)
         response.raise_for_status()
 
-        p_tag = soup.find('p') # 先把找到的p标签存起来
+        # 这一行是创建 soup 对象的关键，必须存在
+        soup = BeautifulSoup(response.text, 'lxml')
+        
+        p_tag = soup.find('p')
 
-        # --- 新增的调试逻辑 ---
+        # 这是我们添加的调试逻辑
         if p_tag is None:
             print("错误：在返回的页面中未找到课程数据所在的<p>标签。")
             print("------ 服务器返回的页面内容如下 ------")
             print(response.text)
             print("------------------------------------")
-            # 也可以选择在这里直接返回或抛出异常，让程序提前终止
-            return [] 
-        # ----------------------
-        json_string = soup.find('p').get_text(strip=True)
-        # 如果当周无课，返回的可能是空字符串或不合法的JSON
+            return []
+            
+        json_string = p_tag.get_text(strip=True)
+        
         if not json_string or json_string.isspace():
             print(f"第 {week} 周没有课程安排。")
             return []
@@ -86,8 +88,6 @@ def fetch_and_parse_weekly_data(session, week):
             course_date_str = date_map.get(day_of_week)
             if not course_date_str: continue
 
-            # 创建一个唯一的标识符来处理同一节课在同一周有多个安排（例如地点不同）
-            # 我们将所有信息组合成一个元组
             unique_id = (
                 course_date_str,
                 course.get('jcdm'),
@@ -218,4 +218,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
