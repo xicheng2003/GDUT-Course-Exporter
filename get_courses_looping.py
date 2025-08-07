@@ -58,27 +58,20 @@ def fetch_and_parse_weekly_data(session, week):
         response = session.get(data_url, headers=headers)
         response.raise_for_status()
 
-        # 这一行是创建 soup 对象的关键，必须存在
-        soup = BeautifulSoup(response.text, 'lxml')
-        
-        p_tag = soup.find('p')
-
-        # 这是我们添加的调试逻辑
-        if p_tag is None:
-            print("错误：在返回的页面中未找到课程数据所在的<p>标签。")
-            print("------ 服务器返回的页面内容如下 ------")
-            print(response.text)
-            print("------------------------------------")
-            return []
-            
-        json_string = p_tag.get_text(strip=True)
+        # --- 核心修改：直接将返回的文本作为JSON处理，不再使用BeautifulSoup ---
+        json_string = response.text
         
         if not json_string or json_string.isspace():
-            print(f"第 {week} 周没有课程安排。")
+            print(f"第 {week} 周数据为空。")
             return []
             
         raw_data = json.loads(json_string)
         
+        # 检查返回的数据是否为空列表，例如 [[], [...]]
+        if not raw_data or not raw_data[0]:
+            print(f"第 {week} 周没有课程安排。")
+            return []
+
         courses_list, date_mapping_list = raw_data[0], raw_data[1]
         date_map = {item['xqmc']: item['rq'] for item in date_mapping_list}
         
@@ -105,7 +98,8 @@ def fetch_and_parse_weekly_data(session, week):
             events.append(event_details)
         return events
     except json.JSONDecodeError:
-        print(f"警告：解析第 {week} 周数据时出错，可能当周无课。")
+        print(f"警告：解析第 {week} 周的JSON数据时出错。")
+        print(f"收到的原始文本是: {response.text}")
         return []
     except requests.exceptions.RequestException as e:
         print(f"错误：获取第 {week} 周数据时网络请求失败: {e}")
@@ -218,5 +212,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
