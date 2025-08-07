@@ -58,7 +58,17 @@ def fetch_and_parse_weekly_data(session, week):
         response = session.get(data_url, headers=headers)
         response.raise_for_status()
 
-        soup = BeautifulSoup(response.text, 'lxml')
+        p_tag = soup.find('p') # 先把找到的p标签存起来
+
+        # --- 新增的调试逻辑 ---
+        if p_tag is None:
+            print("错误：在返回的页面中未找到课程数据所在的<p>标签。")
+            print("------ 服务器返回的页面内容如下 ------")
+            print(response.text)
+            print("------------------------------------")
+            # 也可以选择在这里直接返回或抛出异常，让程序提前终止
+            return [] 
+        # ----------------------
         json_string = soup.find('p').get_text(strip=True)
         # 如果当周无课，返回的可能是空字符串或不合法的JSON
         if not json_string or json_string.isspace():
@@ -207,8 +217,5 @@ def main():
         print("未能获取到任何课程信息，无法生成日历。")
 
 if __name__ == '__main__':
-    try:
-        main()
-    finally:
+    main()
 
-        input("程序已结束，按任意键退出...")
