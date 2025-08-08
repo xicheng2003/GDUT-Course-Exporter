@@ -1,0 +1,16 @@
+# config.yml
+# 学校适配器名称，对应 providers 目录下的文件名（不含.py）
+provider: gdut
+
+# 学期信息
+academic_year_semester: "202501" 
+total_semester_weeks: 20
+
+# 用户认证信息 (仅供本地运行)
+credentials:
+  account: "YOUR_ACCOUNT_HERE"
+  password: "YOUR_PASSWORD_HERE"
+
+# 输出设置
+output_filename: "my_courses.ics"
+timezone: "Asia/Shanghai"
