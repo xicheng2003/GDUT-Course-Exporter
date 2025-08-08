@@ -27,10 +27,10 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run script to generate .ics file
-        run: python get_courses_looping.py
+        run: python run.py
         env:
-          GDUT_ACCOUNT: ${{ secrets.GDUT_ACCOUNT }}
-          GDUT_PASSWORD: ${{ secrets.GDUT_PASSWORD }}
+          ACCOUNT: ${{ secrets.GDUT_ACCOUNT }}
+          PASSWORD: ${{ secrets.GDUT_PASSWORD }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
