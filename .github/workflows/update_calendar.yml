@@ -1,9 +1,9 @@
 name: Update GDUT Calendar
 
 on:
-  # 每天在北京时间早上6点（UTC时间前一天22点）自动运行
+  # 每天在北京时间早上8点（UTC时间0点）自动运行
   schedule:
-    - cron: '0 22 * * *'
+    - cron: '0 0 * * *'
   # 允许手动在 Actions 页面触发此工作流
   workflow_dispatch:
 
@@ -27,10 +27,10 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run script to generate .ics file
-        run: python get_courses_looping.py
+        run: python run.py
         env:
-          GDUT_ACCOUNT: ${{ secrets.GDUT_ACCOUNT }}
-          GDUT_PASSWORD: ${{ secrets.GDUT_PASSWORD }}
+          ACCOUNT: ${{ secrets.GDUT_ACCOUNT }}
+          PASSWORD: ${{ secrets.GDUT_PASSWORD }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

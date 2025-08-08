@@ -5,3 +5,5 @@ pycryptodome
 icalendar
 pytz
 ddddocr
+PyYAML
+python-dotenv

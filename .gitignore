@@ -1,0 +1,15 @@
+# .gitignore
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# User-specific configuration
+config.yml
+
+# Output files
+*.ics
+.vscode
