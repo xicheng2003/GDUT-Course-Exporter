@@ -10,6 +10,7 @@ from importlib import import_module
 from core.scraper import Scraper
 from core.parser import parse_schedule_data
 from core.ical_generator import create_calendar_file
+from core.utils import get_current_academic_semester
 
 def main():
     # 加载.env文件中的环境变量（如果存在）
@@ -49,9 +50,16 @@ def main():
         print("流程终止。")
         sys.exit(1)
 
+    # --- 判断学期设置为手动或者自动 ---
+    academic_year_semester = config.get("academic_year_semester")
+    # 如果配置为空或设置为'auto'，则根据日期自动计算当前学期
+    if not academic_year_semester or str(academic_year_semester).lower() == 'auto':
+        academic_year_semester = get_current_academic_semester()
+        print(f"检测到学期设置为自动，已计算当前学期为: {academic_year_semester}")
+
     all_semester_events = {}
     for week in range(1, config["total_semester_weeks"] + 1):
-        response_text = scraper.get_schedule_data(config["academic_year_semester"], week)
+        response_text = scraper.get_schedule_data(academic_year_semester, week)
         if response_text:
             weekly_events = parse_schedule_data(response_text)
             for event in weekly_events:

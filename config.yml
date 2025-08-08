@@ -3,7 +3,8 @@
 provider: gdut
 
 # 学期信息
-academic_year_semester: "202501" 
+# "auto"表示根据日期自动计算当前学期
+academic_year_semester: auto
 total_semester_weeks: 20
 
 # 用户认证信息 (仅供本地运行)

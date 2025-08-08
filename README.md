@@ -9,6 +9,7 @@
 ## ✨ 项目特性
 
 - **两种运行模式**：支持在本地直接运行生成`.ics`文件，也支持通过GitHub Actions实现自动化部署，生成可长期订阅的日历链接。
+- **智能学期判断**：可配置为自动识别当前所处学年学期，无需手动更新。
 - **验证码自动识别**：内置[ddddocr](https://github.com/sml2h3/ddddocr)库，可自动识别登录验证码，实现端到端的自动化。
 - **高度可扩展**：采用插件化设计，理论上可以轻松扩展以支持任何具有相似流程的教务系统。
 - **可靠的解析**：能够智能识别并处理不同环境下（本地 vs. 服务器）返回的多种数据格式。
@@ -40,9 +41,11 @@ pip install -r requirements.txt
 provider: gdut
 
 # 学期信息
-# "202501" 表示2025-2026学年度第一学期
-# "20"表示学期总周数，对应抓取20周课表
+# 可填写具体学期代码，如 "202501" 表示2025-2026学年度第一学期。
+# 也可填写 "auto" 或留空，程序将自动根据当前日期判断学期。
+academic_year_semester: "auto"
 academic_year_semester: "202501" 
+# "20"表示学期总周数，对应每学期抓取20周课表
 total_semester_weeks: 20
 
 # 用户认证信息 (仅供本地运行)
@@ -75,7 +78,7 @@ python run.py
 - **Name:** `PASSWORD` -> **Secret:** `（这里填入您的教务系统密码）`
 
 **3. 修改 `config.yml`**
-在您的仓库中，直接编辑 `config.yml` 文件。对于自动化部署，您**只需确保 `provider`、`academic_year_semester` 和 `total_semester_weeks` 等信息正确即可**。`credentials` 部分无需理会，程序会优先使用您在第二步中设置的Secrets。
+在您的仓库中，直接编辑 `config.yml` 文件。对于自动化部署，我们**强烈推荐**将 `academic_year_semester` 的值设置为 `auto`，这样就无需在新学期手动更新此配置。您只需确保 `provider` 和 `total_semester_weeks` 等信息正确即可。`credentials` 部分无需理会，程序会优先使用您在第二步中设置的Secrets。
 
 **4. 启用 Actions 和 Pages**
 - **Actions**: 通常在您Fork并修改文件后，GitHub Actions会自动启用。您可以在仓库的 `Actions` 标签页查看。如果未启用，请根据提示点击启用。
@@ -91,7 +94,7 @@ python run.py
 
 欢迎所有形式的贡献！尤其是帮助项目支持更多的学校。
 
-### 添加新学校适配器
+### 添加新插件以适配新的学校
 
 1.  在 `providers/` 目录下，参考 `gdut.py` 创建一个新的学校文件，例如 `new_school.py`。
 2.  在该文件中，定义一个 `NEW_SCHOOL_PROVIDER` 字典，包含该校的`base_url`、`class_time_map`以及任何特殊的加密函数。
