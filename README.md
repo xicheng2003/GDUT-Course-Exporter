@@ -1,4 +1,4 @@
-# [GDUT-Course-Exporter] - GDUT教务系统课表导出工具
+# GDUT-Course-Exporter - GDUT教务系统学生课表导出工具
 
 [![GitHub stars](https://img.shields.io/github/stars/xicheng2003/GDUT-Course-Exporter?style=flat-square)](https://github.com/xicheng2003/GDUT-Course-Exporter)
 [![GitHub forks](https://img.shields.io/github/forks/xicheng2003/GDUT-Course-Exporter?style=flat-square)](https://github.com/xicheng2003/GDUT-Course-Exporter/network)
@@ -62,6 +62,8 @@ python run.py
 ```
 运行成功后，您会在项目根目录下找到生成的 `.ics` 文件（默认为 `my_courses.ics`）。您可以将此文件导入到任意日历应用中。
 
+> **提示**：程序内置了更强的错误处理和重试机制。如果遇到网络波动或验证码识别问题，程序会自动尝试重新连接或重新识别，并提供清晰的错误信息帮助您诊断问题。
+
 ---
 
 ### 方案二：自动化部署（生成可订阅的日历链接）
@@ -104,3 +106,14 @@ python run.py
 ## 📄 开源许可证
 
 本项目基于 [MIT License](LICENSE) 开源。
+
+## ❓ 常见问题 (FAQ)
+
+**Q: 运行时遇到 `502 Server Error: Bad Gateway` 错误怎么办？**
+A: 此错误通常表示教务系统服务器临时不可用。请稍等一段时间（几分钟到几小时）后重试。您也可以直接在浏览器中访问教务系统网站确认其是否正常运行。
+
+**Q: 运行时提示 `账号或密码错误` 怎么办？**
+A: 请仔细检查您在 `.env` 文件或 GitHub Secrets 中配置的 `ACCOUNT` 和 `PASSWORD` 是否正确无误。
+
+**Q: 程序在验证码识别阶段卡住或失败怎么办？**
+A: 程序会自动重试验证码获取和识别。如果持续失败，可能是网络问题或教务系统暂时变更了验证码规则。请检查网络连接或稍后重试。

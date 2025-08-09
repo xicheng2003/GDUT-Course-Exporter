@@ -12,4 +12,7 @@ config.yml
 
 # Output files
 *.ics
+
+# Project management
 .vscode
+TODO.md
