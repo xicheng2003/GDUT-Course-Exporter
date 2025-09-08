@@ -49,18 +49,21 @@ jobs:
           path: my_courses.ics
       # --- 诊断步骤结束 ---
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-          # 只推送 my_courses_semester.ics 文件到 gh-pages 分支
-          publish_branch: gh-pages
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          # 通过 keep_files 确保每次只更新.ics文件，不删除其他文件
-          keep_files: true
-          # 筛选要发布的文件
-          allow_empty_commit: false
-          force_orphan: false
-          full_commit_message: 'Update calendar file'
+      - name: Commit and Push .ics File
+        run: |
+          # 设置 Git 的用户信息
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # 将生成的文件添加到暂存区
+          # 注意：这里的文件名 'my_courses.ics' 必须和您脚本生成的文件名完全一致
+          git add -f my_courses.ics
+          
+          # 提交文件，-m 后面的内容是提交信息
+          # `git commit -am` 会暂存所有修改过的文件并提交，这里为了精确，我们使用上面的 add
+          git commit -m "Update calendar on $(date)"
+          
+          # 强制推送到 gh-pages 分支
+          # 这会用最新的提交覆盖掉 gh-pages 分支上旧的内容
+          # 对于发布自动生成的文件来说，这是一个非常安全和标准的操作
+          git push -f origin HEAD:gh-pages
