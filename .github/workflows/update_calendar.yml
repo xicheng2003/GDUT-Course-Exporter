@@ -37,8 +37,8 @@ jobs:
       - name: Check generated file content
         run: |
           echo "--- First 10 lines of the generated .ics file ---"
-          # 假设文件名是 my_courses_semester.ics，如果不是请替换
-          head -n 10 my_courses_semester.ics
+          # 假设文件名是 my_courses.ics，如果不是请替换
+          head -n 10 my_courses.ics
           echo "------------------------------------------------"
 
       - name: Upload .ics file as an artifact
@@ -46,7 +46,7 @@ jobs:
         with:
           name: calendar-ics-file
           # 同样，如果文件名不同请替换
-          path: my_courses_semester.ics
+          path: my_courses.ics
       # --- 诊断步骤结束 ---
 
       - name: Deploy to GitHub Pages
