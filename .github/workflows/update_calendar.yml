@@ -32,6 +32,23 @@ jobs:
           ACCOUNT: ${{ secrets.GDUT_ACCOUNT }}
           PASSWORD: ${{ secrets.GDUT_PASSWORD }}
 
+
+      # --- 诊断步骤：查看并上传生成的文件 ---
+      - name: Check generated file content
+        run: |
+          echo "--- First 10 lines of the generated .ics file ---"
+          # 假设文件名是 my_courses_semester.ics，如果不是请替换
+          head -n 10 my_courses_semester.ics
+          echo "------------------------------------------------"
+
+      - name: Upload .ics file as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: calendar-ics-file
+          # 同样，如果文件名不同请替换
+          path: my_courses_semester.ics
+      # --- 诊断步骤结束 ---
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
