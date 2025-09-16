@@ -106,5 +106,5 @@ jobs:
         with:
           name: calendar-build
           path: |
-            ${CAL_FILE}
-            ${STATE_FILE}
+            ${{ env.CAL_FILE }}
+            ${{ env.STATE_FILE }}
