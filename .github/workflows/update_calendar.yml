@@ -1,69 +1,110 @@
 name: Update GDUT Calendar
 
 on:
-  # 每天在北京时间早上8点（UTC时间0点）自动运行
+  # 每天在北京时间早上8点（UTC 0点）运行
   schedule:
     - cron: '0 0 * * *'
-  # 允许手动在 Actions 页面触发此工作流
   workflow_dispatch:
 
 jobs:
-  build:
+  update:
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
-      
+
+    env:
+      CAL_FILE: my_courses.ics
+      STATE_FILE: ical_state.json
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout source (main)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore previous state from gh-pages
+        run: |
+          echo "Attempting to fetch previous state from gh-pages..."
+          if git ls-remote --exit-code origin gh-pages >/dev/null 2>&1; then
+            git fetch origin gh-pages:gh-pages --depth=1
+            if git show gh-pages:${STATE_FILE} > ${STATE_FILE} 2>/dev/null; then
+              echo "Restored ${STATE_FILE} from gh-pages.";
+              head -n 5 ${STATE_FILE} || true
+            else
+              echo "No existing ${STATE_FILE} on gh-pages.";
+            fi
+            if git show gh-pages:${CAL_FILE} > prev_${CAL_FILE} 2>/dev/null; then
+              echo "Previous calendar size:" $(wc -c < prev_${CAL_FILE})
+            fi
+          else
+            echo "gh-pages branch not found (first run)."
+          fi
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+          cache: 'pip'
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run script to generate .ics file
+      - name: Generate calendar (incremental)
         run: python run.py
         env:
           ACCOUNT: ${{ secrets.GDUT_ACCOUNT }}
           PASSWORD: ${{ secrets.GDUT_PASSWORD }}
 
-
-      # --- 诊断步骤：查看并上传生成的文件 ---
-      - name: Check generated file content
+      - name: Quick inspect outputs
         run: |
-          echo "--- First 10 lines of the generated .ics file ---"
-          # 假设文件名是 my_courses.ics，如果不是请替换
-          head -n 10 my_courses.ics
-          echo "------------------------------------------------"
+          echo "--- First 12 lines of new ICS ---"; head -n 12 ${CAL_FILE} || true
+          echo "--- Sample SEQUENCE lines ---"; grep -m3 SEQUENCE ${CAL_FILE} || true
+          echo "--- Any CANCELLED events? ---"; grep -m3 CANCELLED ${CAL_FILE} || echo "(none)"
+          test -f ${STATE_FILE} && echo "State file size:" $(wc -c < ${STATE_FILE}) || echo "No state file generated!"
 
-      - name: Upload .ics file as an artifact
+      - name: Detect changes (ICS or state)
+        id: diffcheck
+        run: |
+          set -e
+          git add -N ${CAL_FILE} ${STATE_FILE} || true
+          CHANGED=0
+          if ! git diff --quiet -- ${CAL_FILE}; then echo "ICS changed"; CHANGED=1; fi
+          if ! git diff --quiet -- ${STATE_FILE}; then echo "State changed"; CHANGED=1; fi
+          echo "changed=${CHANGED}" >> $GITHUB_OUTPUT
+
+      - name: Publish to gh-pages
+        if: steps.diffcheck.outputs.changed == '1'
+        run: |
+          echo "Publishing updated ICS & state to gh-pages..."
+          mkdir pub
+            
+          cp ${CAL_FILE} pub/
+          cp ${STATE_FILE} pub/ || true
+          # 可选主页说明
+          cat > pub/index.md <<EOF
+          # GDUT Calendar
+          自动生成的课程日历文件。下载或订阅: 
+          - ICS: ./${CAL_FILE}
+          - 更新时间(UTC): $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          EOF
+
+          cd pub
+          git init
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "Update calendar $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git branch -m gh-pages
+          git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages
+
+      - name: Skip publish (no changes)
+        if: steps.diffcheck.outputs.changed != '1'
+        run: echo "No changes in ICS or state; skip publishing."
+
+      - name: Upload artifacts (debug)
         uses: actions/upload-artifact@v4
         with:
-          name: calendar-ics-file
-          # 同样，如果文件名不同请替换
-          path: my_courses.ics
-      # --- 诊断步骤结束 ---
-
-      - name: Commit and Push .ics File
-        run: |
-          # 设置 Git 的用户信息
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
-          # 将生成的文件添加到暂存区
-          # 注意：这里的文件名 'my_courses.ics' 必须和您脚本生成的文件名完全一致
-          git add -f my_courses.ics
-          
-          # 提交文件，-m 后面的内容是提交信息
-          # `git commit -am` 会暂存所有修改过的文件并提交，这里为了精确，我们使用上面的 add
-          git commit -m "Update calendar on $(date)"
-          
-          # 强制推送到 gh-pages 分支
-          # 这会用最新的提交覆盖掉 gh-pages 分支上旧的内容
-          # 对于发布自动生成的文件来说，这是一个非常安全和标准的操作
-          git push -f origin HEAD:gh-pages
+          name: calendar-build
+          path: |
+            ${CAL_FILE}
+            ${STATE_FILE}
