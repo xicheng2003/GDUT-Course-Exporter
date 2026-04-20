@@ -412,11 +412,7 @@ class Scraper:
         max_retries = 2
         for attempt in range(1, max_retries + 1):
             try:
-                main_page_url = f"{self.base_url}/xsgrkbcx!xskbList.action?xnxqdm={academic_year}&zc={week}"
-                print(f"  访问课表主页 (尝试 {attempt}/{max_retries})...")
-                main_page_response = self._request("GET", main_page_url, timeout=10)
-                main_page_response.raise_for_status()
-                
+                main_page_url = f"{self.base_url}/login!welcome.action"
                 data_url = f"{self.base_url}/xsgrkbcx!getKbRq.action?xnxqdm={academic_year}&zc={week}"
                 headers = self.headers.copy()
                 headers['Referer'] = main_page_url
@@ -431,6 +427,12 @@ class Scraper:
                     continue # 重试
 
                 response.raise_for_status() # 检查其他HTTP错误
+                if response.text.lstrip().startswith("<!DOCTYPE") or "非法访问" in response.text:
+                    print("  课表数据接口返回了非法访问页面，而不是周课表数据。")
+                    if attempt < max_retries:
+                        print("  等待2秒后重试...")
+                        time.sleep(2)
+                    continue
                 print(f"  第 {week} 周课表数据获取成功。")
                 return response.text
             except requests.exceptions.Timeout:
