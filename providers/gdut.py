@@ -4,6 +4,9 @@ from core.utils import gdut_encrypt_password
 GDUT_PROVIDER = {
     "name": "广东工业大学",
     "base_url": "https://jxfw.gdut.edu.cn",
+    "sso_login_url": "https://authserver.gdut.edu.cn/authserver/login",
+    "sso_service_url": "https://jxfw.gdut.edu.cn/new/ssoLogin",
+    "allow_insecure_ssl_fallback": True,
     "encrypt_password_func": gdut_encrypt_password,
     "class_time_map": {
         "01": ("08:30", "09:15"), "02": ("09:20", "10:05"), "03": ("10:25", "11:10"),

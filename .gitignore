@@ -12,6 +12,8 @@ config.yml
 
 # Output files
 *.ics
+ical_state.json
+debug_captchas/
 
 # Project management
 .vscode
